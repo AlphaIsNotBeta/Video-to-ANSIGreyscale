@@ -6,3 +6,5 @@ OpenCV - 4.8.0<br />
 Windows Environment. (This code only works on Windows)
 ## Usage
 Paste your video path to the video_path.
+## P.S
+I will not maintaining this code anymore.
