@@ -1,60 +1,65 @@
 #include "opencv-image_header.h"
+#define VIDEO_PATH "PATH"
+#define ANSI_CODE "\033[48;5;"
+
+#ifndef VIDEO_PATH
+    #define VIDEO_PATH NULL
+#endif
 
 
+int main() {
 
-string pixelToANSI(int pixel_intensity) {
-    // const string ASCII_CHARS = "@$%#&!*+=-_.                ";
-    // const string ASCII_CHARS = "@#&!*+=-_.     ";
-    // const string ASCII_CHARS = "   ._-=+*!&#%$@";
-    const int grayscaleDensity[24] = {232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255};
-    string s = "\033[48;5;" + to_string(grayscaleDensity[pixel_intensity * 24 / 255 - 1]) + "m ";
-    return s;
-}
+    if (VIDEO_PATH == NULL){
+        cerr << "Missing video path.";
+        return -1;
+    }
 
-void main() {
+    VideoCapture cap(VIDEO_PATH);
 
-    string video_path = "C:\\Users\\Jun\\Documents\\opencv-image&video\\opencv-video\\video1.mp4";
-    VideoCapture cap(video_path);
+    const string grayscaleDensity[24] = {"232","233","234","235","236","237","238","239","240","241","242","243","244","245","246","247","248","249","250","251","252","253","254","255"};
+    string ansi_frame;
 
-    double fps = cap.get(CAP_PROP_FPS); 
-    int frame_duration_ms = 1000 / fps;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int height, width;
 
-    cout << fps;
+    for (size_t TIME = 5; TIME > 0; TIME -= 1){
+        system("cls");
+        cout << "Video start in " << TIME << "\n";
+        sleep_for(seconds(1));
+    }
 
+    Mat frame, gray_frame, resized_frame;
+
+    system("cls");
     while (true) {
-
-
-        int frame_width = cap.get(CAP_PROP_FRAME_WIDTH);
-        int frame_height = cap.get(CAP_PROP_FRAME_HEIGHT);
-
-        CONSOLE_SCREEN_BUFFER_INFO csbi;
-        int height, width;
 
         GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
         width = csbi.srWindow.Right - csbi.srWindow.Left;
         height = csbi.srWindow.Bottom - csbi.srWindow.Top;
 
-        Mat frame, gray_frame, resized_frame;
-
         cap >> frame;
-        if (frame.empty())
-            break;
 
+        if(frame.empty()){
+            break;
+        }
+        
         cvtColor(frame, gray_frame, COLOR_BGR2GRAY);
 
         resize(gray_frame, resized_frame, Size(width, height), 0, 0, INTER_LINEAR);
 
-        string ansi_frame;
-        for (int i = 0; i < height; ++i) {
+        ansi_frame = "";
+        for (int i = 0; i < height; i += 1) {
             for (int j = 0; j < width; ++j) {
-                ansi_frame += pixelToANSI(resized_frame.at<uchar>(i, j));
+                ansi_frame += ANSI_CODE + grayscaleDensity[resized_frame.at<uchar>(i, j) * 24 / 255] + "m ";
+                
             }
             ansi_frame += "\n";
         }
-        cout << ascii_frame;
-        sleep_for(milliseconds(frame_duration_ms));
+        cout << ansi_frame;
         system("cls");
     }
-    cout << "Video over. . .";
-    cin.get();
+    cout << "Video over. . .\n";
+    system("pause");
+
+    return 0;
 }
